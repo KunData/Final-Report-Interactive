@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <h1>EDAV FINAL PROJECT INTERACTIVE GRAPH</h1>
+        <h3><i>---- Yadin Rozov and Kun Tao</i></h3>
+        <br></br>
+        <h2>Animate Debt Held by Generation</h2>
+        
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        
+        <style>
+            body {
+                font-family: sans-serif;
+            }
+
+            a {
+                font-size:20px;
+                margin-right:30px;
+            }
+
+            .axis { 
+                font: 14px sans-serif; 
+            }
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+            .line {
+                fill:none;
+                stroke: #6F257F;
+                stroke-width: 5px;
+            }
+            
+            .overlay {
+                fill: none;
+                pointer-events: all;
+            }
+            
+            .hover-line {
+                stroke: #B74779;
+                stroke-width: 2px;
+                stroke-dasharray: 3,3;
+            }
+
+            .x.axis path {
+                display: inline;
+            }
+
+            .y.axis path {
+                display: none;
+            }
+  
+            .axis.y .tick line { 			
+                stroke-width:1px; 			
+                stroke:#ccc; 			
+                stroke-opacity:1;	 		
+            }
+            
+            #tooltip {
+                position: absolute;
+                width: 200px;
+                height: auto;
+                padding: 10px;
+                background-color: gray;
+                -webkit-border-radius: 10px;
+                -moz-border-radius: 10px;
+                border-radius: 10px;
+                font-weight: bold;
+                -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                pointer-events: none;
+            }
+            
+            #tooltip.hidden {
+                display: none;
+            }
+            
+            #tooltip p {
+                margin: 0;
+                font-family: Futura;
+                font-size: 16px;
+                line-height: 20px;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <div id="controls">
+            <button id="btnDebtPct">Draw Debt Held by Generation</button>
+        </div>
+        
+        <div id="chart"> </div>
+        
+        <div id="tooltip" class="hidden">
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function(){ 
+                d3.selectAll("button").on("click",function(d, i){return animatelines(i);})
+                makeChart();}, false);
+                
+            function makeChart()
+            {
+            var chartWidth = parseInt(d3.select("#chart").style("width"));
+
+            var margin = {top: 40, right: 40, bottom: 40, left: 75};
+            var outWidth = parseInt(chartWidth * 3 / 4);
+            var outHeight = 400;
+            
+            var width = outWidth - margin.left - margin.right;
+            var height = outHeight - margin.top - margin.bottom;
+                
+            var data = [{ "date": "2004",
+                          "Percent of Total Debt by People under 30": "0.4287352",
+                          "Percent of Total Debt by People between 30 and 50": "0.4673477",
+                          "Percent of Total Debt by People above 50": "0.1039172"
+                        }, 
+                        { "date": "2005",
+                          "Percent of Total Debt by People under 30": "0.4153338",
+                          "Percent of Total Debt by People between 30 and 50": "0.4704299",
+                          "Percent of Total Debt by People above 50": "0.1142362"
+                        },
+                        { "date": "2006",
+                          "Percent of Total Debt by People under 30": "0.4079384",
+                          "Percent of Total Debt by People between 30 and 50": "0.4666936",
+                          "Percent of Total Debt by People above 50": "0.125368"
+                        },
+                        { "date": "2007",
+                          "Percent of Total Debt by People under 30": "0.4022039",
+                          "Percent of Total Debt by People between 30 and 50": "0.4655762",
+                          "Percent of Total Debt by People above 50": "0.1322199"
+                        },
+                        { "date": "2008",
+                          "Percent of Total Debt by People under 30": "0.3928113",
+                          "Percent of Total Debt by People between 30 and 50": "0.469426",
+                          "Percent of Total Debt by People above 50": "0.1377627"
+                        },
+                        { "date": "2009",
+                          "Percent of Total Debt by People under 30": "0.3827158",
+                          "Percent of Total Debt by People between 30 and 50": "0.4733223",
+                          "Percent of Total Debt by People above 50": "0.1439619"
+                        },
+                        { "date": "2010",
+                          "Percent of Total Debt by People under 30": "0.3713308",
+                          "Percent of Total Debt by People between 30 and 50": "0.4803078",
+                          "Percent of Total Debt by People above 50": "0.1483614"
+                        },
+                        { "date": "2011",
+                          "Percent of Total Debt by People under 30": "0.3626444",
+                          "Percent of Total Debt by People between 30 and 50": "0.4856141",
+                          "Percent of Total Debt by People above 50": "0.1517415"
+                        },
+                        { "date": "2012",
+                          "Percent of Total Debt by People under 30": "0.3345748",
+                          "Percent of Total Debt by People between 30 and 50": "0.5054172",
+                          "Percent of Total Debt by People above 50": "0.160008"
+                        },
+                        { "date": "2013",
+                          "Percent of Total Debt by People under 30": "0.3355165",
+                          "Percent of Total Debt by People between 30 and 50": "0.5025519",
+                          "Percent of Total Debt by People above 50": "0.1619316"
+                        },
+                        { "date": "2014",
+                          "Percent of Total Debt by People under 30": "0.3206729",
+                          "Percent of Total Debt by People between 30 and 50": "0.5112376",
+                          "Percent of Total Debt by People above 50": "0.1680895"
+                        },
+                        { "date": "2015",
+                          "Percent of Total Debt by People under 30": "0.3057887",
+                          "Percent of Total Debt by People between 30 and 50": "0.5183646",
+                          "Percent of Total Debt by People above 50": "0.1758467"
+                        },
+                        { "date": "2016",
+                          "Percent of Total Debt by People under 30": "0.2912424",
+                          "Percent of Total Debt by People between 30 and 50": "0.526714",
+                          "Percent of Total Debt by People above 50": "0.1820436"
+                        },
+                        { "date": "2017",
+                          "Percent of Total Debt by People under 30": "0.2768464",
+                          "Percent of Total Debt by People between 30 and 50": "0.5337285",
+                          "Percent of Total Debt by People above 50": "0.1894251"
+                        }
+                       ]
+                       
+                console.log(data)
+                
+                var xScale = d3.scaleTime().range([0, width - 250]);
+                var xAxis = d3.axisBottom(xScale);
+
+                var yScale = d3.scaleLinear().domain([0, 60]).range([height, 0]);
+                var yAxis = d3.axisLeft(yScale).tickFormat(d3.format('.0f'));
+                
+                var line = d3.line().x(function(d) { return xScale(d.date); })
+                                    .y(function(d) { return yScale(d.ratio * 100); });
+            
+                var svg = d3.select("#chart")
+                .append("svg")
+                .attr("class", "svgele") 
+                .attr("id", "svgEle")  
+                .attr("width", width + margin.left + margin.right) 
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g") 
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+                var color = d3.scaleOrdinal(d3.schemeCategory10);
+                color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+            
+                var parseTime = d3.timeParse("%Y");
+                var circData = new Array();
+                data.forEach(function(d) {
+                    d.date = parseTime(d.date);
+                    circData.push(["Percent of Total Debt by People under 30", d.date, d["Percent of Total Debt by People under 30"]],
+                                  ["Percent of Total Debt by People between 30 and 50", d.date, d["Percent of Total Debt by People between 30 and 50"]],
+                                  ["Percent of Total Debt by People above 50", d.date, d["Percent of Total Debt by People above 50"]])
+                });
+                
+                
+                projections = color.domain().map(function(name) {
+                    return {
+                        name: name,
+                        values: data.map(function(d) {
+                            return {date: d.date, ratio: d[name]}
+                            })
+                    };
+                });
+            
+                xScale.domain(d3.extent(data, function(d) { return d.date; }));
+            
+                svg.append('g')
+                .attr("class", "axis")
+                .attr('transform', 'translate(0,' + height + ')')
+                .call(xAxis);
+                svg.append("text")          
+                .attr("transform", "translate(" + ((width - 250) / 2) + " ," + (height + 40) + ")")
+                .style("text-anchor", "middle")
+                .text("Year");
+            
+                svg.append('g')
+                .attr("class", "axis")
+                .call(yAxis); 
+                svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("x", -(height / 2))
+                .attr("y", -(margin.left - 25))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Percent"); 
+                
+                projections = projections.filter(function(d){ return d.values.length > 0; });
+                var proj = svg.selectAll(".proj")
+                .data(projections)
+                .enter()
+                .append("g")
+                .attr("class", "proj");
+            
+                proj.append("path")
+                .attr("class", "line")
+                .attr("id" , function(d, i){
+                        return "line" + i;
+                     })
+                .attr("stroke-linecap","round")
+                .attr("d", function(d, i) {
+                        return line(d.values);
+                     })
+                .style("stroke", function(d) { return color(d.name); });
+                
+                
+                var legendData = new Array()
+                projections.forEach(function (d) {
+                    var temp2 = d.values;
+                    legendData.push([d.name, temp2[13].date, temp2[13].ratio])
+                });
+                
+                var tooltip = d3.select("body")
+                .append("div")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .text("a simple tooltip");
+  
+                proj.selectAll("circle")
+                .data(circData)
+                .enter()
+                .append("circle")
+                .attr("class", "circ")
+                .attr("id" , function(d, i){
+                        return "circ" + i;
+                     })
+                .attr("cx", d => xScale(d[1]))
+                .attr("cy", d => yScale(d[2] * 100))
+                .attr("fill", function(d) { return color(d[0]); })
+                .on("mouseover", function(d) {
+                        d3.select(this)
+                        .transition()
+                        .duration(750)
+                        .attr("r", 10);
+    
+                        return tooltip.style("visibility", "visible")
+                                      .style("background-color", "lightgray")
+                                      .style("color", color(d[0]))
+                                      .text(d[0]
+                                            + " in "
+                                            + d[1].getFullYear()
+                                            + ": "
+                                            + Math.round(d[2] * 100 * 100) / 100 + "%");
+                    })
+                .on("mousemove", function() {
+                        return tooltip.style("top", (d3.event.pageY - 10) + "px")
+                                      .style("left", (d3.event.pageX + 10) + "px");
+                    })
+                .on("mouseout", function() {
+                        d3.select(this)
+                        .transition()
+                        .duration(750)
+                        .attr("r", 5);
+                        return tooltip.style("visibility", "hidden");
+                    });
+
+                
+                d3.select('svg')
+                .append('text')
+                .attr('id', 'figTitle')
+                .text('Debt held by each Generation')
+                .attr('x', 200)
+                .attr('y', margin.top);
+                
+                                    
+                d3.select("svg")
+                .selectAll("legend")
+                .data(legendData)
+                .enter()
+                .append('text')
+                .attr("class", "legend")
+                .attr("id" , function(d, i){
+                        return "legend" + i;
+                    })
+                .text(d => d[0])
+                .style('fill', function(d) { 
+                        return color(d[0]); 
+                    })
+                .attr('alignment-baseline', 'middle')
+                .attr('x', width - 250)
+                .attr('y', function(d) {
+                        return yScale(d[2] * 100) + 20;
+                    })
+                    
+                d3.selectAll(".line").style("opacity", "0");
+                d3.selectAll(".circ").style("opacity", "0");
+                d3.selectAll(".legend").style("opacity", "0");
+            }
+                    
+            function animateCircs() 
+            {
+                d3.selectAll(".circ").style("opacity", "1");
+                d3.selectAll(".circ").each(function(d, i)
+                {
+                    d3.selectAll("#circ" + i)
+                    .transition()
+                    .duration(5000)
+                    .delay(50 * i)
+                    .attr("r", 5)
+                })
+                
+                d3.selectAll(".legend").transition().delay(100).style("opacity", "1");
+            }
+            
+            function animatelines()
+            {
+                animateCircs();
+                
+                d3.selectAll(".line").style("opacity", "0.5");
+                d3.selectAll(".line").each(function(d, i)
+                {
+                    var totalLength = d3.select("#line" + i).node().getTotalLength();
+                    d3.selectAll("#line" + i)
+                    .attr("stroke-dasharray", totalLength + " " + totalLength)
+                    .attr("stroke-dashoffset", totalLength)
+                    .transition()
+                    .duration(5000)
+                    .delay(100 * i)
+                    .attr("stroke-dashoffset", 0)
+                    .style("stroke-width", 3)
+                })
+            }
+
+        </script>
+    </body>
+
+</html>
+
