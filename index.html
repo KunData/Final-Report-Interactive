@@ -3,9 +3,77 @@
     <head>
         <meta charset="utf-8">
         <h1>EDAV FINAL PROJECT INTERACTIVE GRAPH</h1>
-        <h3><i>---- Yadin Rozov and Kun Tao</i></h3>
+        <h3><i>Yadin Rozov and Kun Tao</i></h3>
+        <h2>Introduction</h2>
+        <p>The Federal Student Loan program is a key funding mechanism individuals in the United States use to pursue higher education. 
+           The program has reportedly grown quickly in the last decade and now outstanding student loan balances make up the biggest component 
+           of the Federal Government’s balance sheet. We attempt to look at data to get a better understanding of this program and the 
+           potential impact student lending could have on the borrowers and the broader economy.
+        </p>
+           
+        </p>One of the key questions in our study is: what is the trend of the debt held by individuals from the perspective of 
+            Age Demographics in the past decade? To answer this, we look at the annual debt data provided by the New York Fed, 
+            which span from 2004 to 2017 and are across five age groups: under 30, 30 to 39, 40 to 49, 50 to 59 and older than 
+            60 years old. We normalize the debt levels to GDP with nominal GDP data from the World Bank and then further
+            consolidate the data into <i>generations</i> by using <i>under 30</i> to represent the current <i>Millennials</i>, 
+            <i>30-50</i> to represent <i>Gen-X</i> and <i>Over 50</i> to represent the <i>Baby-boomers</i>.
+        </p>
+        <p>
+            <b><i>Two shocking results come out: First the percentage of debt held by people under 30% has gone down from 42.8% to 27% 
+                  and second that debt load has been picked up by both the middle-age population who went from 47% to 53% and the population 
+                  of people older than 50 almost doubled from 10% to 19%.
+            </i></b>
+        </p>
+        
+        <p>As one of the most significant findings of our EDAV Final Project, we deciede to share these two discoveries with the public
+           by visualizing them interactively and publishing the animated graphs on the internet.
+        </p>
+        
+        <h2>Interactive Data Visualizations with D3.js</h2>
+        
+        <p>Here we use D3.js to build the following easy-to-use, dynamic and interactive chart to show the trend of the Debt Held 
+           by Each Generation from 2004 to 2017.
+        <p>
+        <p>The time series of the percentage of the total debt held by each age group are represented by different colors: orange for
+           <i>people between 30 and 50</i>, blue for <i>people under 30</i> and green for <i>people above 50</i>. There is a 
+           <i>Draw Time Series</i> button on the top left corner of the graph system. After you click it for the first time,
+           three group of dots will pop up with each dot denoting the percent of total debt held by a specific group in a
+           specific year. Then, three lines will pass through each group of dots to show the trends in a more intuitive way.
+           Near the end of each line or each group of dots, there will be a label in the same color to tell you which group
+           the line and/or dots represent. If you want to see the number of percentage that a specific dot represents, just 
+           mouse over it, then a tooltip will pop up to show you all the information you might be interested, meanwhile, the
+           dot of interest will zoom in, and then back to its original size once you move your mouse out of it. In addition, the
+           <i>Draw Time Series</i> button can be clicked as multiple times as you want, the only difference from the first time
+           you click it is: the lines will be re-drawn, but the dots and labels will stay there.
+        <p>
+
+        <h2>Technical Challenges of Our D3-based Interactive Visualizations</h2>   
+        
+            <p>As described in the above <b>Introduction</b> section, the orignal data used to draw this graph comes from the
+               New York Fed, and has gone through a series of aggregation and normalization processing running by the code in
+               our <i>EDAV Final Report.Rmd</i>. Initially, we had attempted to convert the dataframe produced by our
+               <i>EDAV Final Report.Rmd</i> to a csv file, and then read in the csv file with D3 script to generate the
+               desired interactive visualizations. However, this implementation encountered the problem of
+               <i>Cross-Origin Request Blocked</i> with both Firefox and Google Chrome browsers. Briefly speaking, these two
+               popular web browsers blocked the request from the D3 script to load the external csv file due to web security
+               considerations. Therefore, we have to embed the dataset as an array of objects manually in our D3 script, which
+               is pretty time-consuming. Otherwise, we would be able to publish more interactive visualizations for other interesting
+               findings in our EDAV Final Report. One possible solution to this issue is to build a LAMP(Linux operating system, 
+               Apache HTTP Server, MySQL relational database management system (RDBMS) and PHP programming language)-based
+               web application. Thus, we will be able to store the processed datasets in the MySQL database, then render them 
+               interactively through the User Interface of the web app.                              
+            </p>
+            <p>In addition, it is also desirable to put other functional buttons on the webpage in the future, like <i>Print</i>, 
+            <i>Download</i>, and so on. Thus, if people who read this webpge like our findings, they can easily save the
+               graph for future usage.            
+            </p>
+            
+        <h2>References</h2>
+        
+        <p>1. Yadin Rozov and Kun Tao, <i>"EDAV Final Report"</i></p>
+        <p>2. <a href="https://edav.info/project.html">Final Project Assignment</a> </p>
         <br></br>
-        <h2>Animate Debt Held by Generation</h2>
+        
         
         <script src="https://d3js.org/d3.v4.min.js"></script>
         
@@ -13,10 +81,12 @@
             body {
                 font-family: sans-serif;
             }
-
-            a {
-                font-size:20px;
-                margin-right:30px;
+            
+            button {
+                border: none;
+                font-size: 20px;
+                background-color: lightblue;
+                display: inline-block;
             }
 
             .axis { 
@@ -91,7 +161,7 @@
     
     <body>
         <div id="controls">
-            <button id="btnDebtPct">Draw Debt Held by Generation</button>
+            <button id="btnDebtPct">Draw Time Series</button>
         </div>
         
         <div id="chart"> </div>
@@ -186,9 +256,7 @@
                           "Percent of Total Debt by People above 50": "0.1894251"
                         }
                        ]
-                       
-                console.log(data)
-                
+
                 var xScale = d3.scaleTime().range([0, width - 250]);
                 var xAxis = d3.axisBottom(xScale);
 
@@ -325,9 +393,10 @@
                 d3.select('svg')
                 .append('text')
                 .attr('id', 'figTitle')
-                .text('Debt held by each Generation')
+                .text('Debt held by Each Generation')
                 .attr('x', 200)
-                .attr('y', margin.top);
+                .attr('y', margin.top)
+                .style('font-size', '24');
                 
                                     
                 d3.select("svg")
